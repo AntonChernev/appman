@@ -95,8 +95,13 @@ defmodule Appman.Manager do
         Logger.info("#{name} is running.")
         Node.monitor(node, true)
         GenServer.cast(pid, {:server_pid, self()})
-        new_app = app |> Map.put(:status, :running) |> Map.put(:pid, pid)
+
+        new_app =
+          app
+          |> Map.put(:status, :running)
+          |> Map.put(:pid, pid)
           |> Map.put(:init_ref, nil)
+
         new_state = Map.put(state, name, new_app)
         {:noreply, new_state}
 
@@ -150,6 +155,7 @@ defmodule Appman.Manager do
     case Map.get(state, name) do
       nil ->
         Logger.info("${name} not registered.")
+
       _ ->
         # Run tail command in a separate process.
         Task.Supervisor.async_nolink(Appman.TaskSupervisor, fn ->
@@ -160,6 +166,7 @@ defmodule Appman.Manager do
           Logger.info("Logs for #{name}:\n" <> elem(logs, 0))
         end)
     end
+
     {:noreply, state}
   end
 
