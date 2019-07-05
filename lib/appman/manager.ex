@@ -35,11 +35,12 @@ defmodule Appman.Manager do
   List apps callback.
   """
   def handle_call(:list, _, state) do
-    Enum.each(state, fn {name, %{path: path, status: status}} ->
-      Logger.info("Name: #{name}, path: #{path}, status: #{status}")
-    end)
+    info =
+      Enum.map(state, fn {name, %{path: path, status: status}} ->
+        [name: name, path: path, status: status]
+      end)
 
-    {:reply, :ok, state}
+    {:reply, info, state}
   end
 
   @doc """
@@ -54,9 +55,11 @@ defmodule Appman.Manager do
         name_prefix = Node.self() |> to_string() |> String.split("@") |> List.first()
 
         # Run startup command in a separate process
+        start_script = Application.get_env(:appman, :start_node_script)
+
         task =
           Task.Supervisor.async_nolink(Appman.TaskSupervisor, fn ->
-            command = File.cwd!() <> "/start_node.sh #{name_prefix <> "_" <> name} #{path}"
+            command = File.cwd!() <> "/#{start_script} #{name_prefix <> "_" <> name} #{path}"
             :os.cmd(to_charlist(command))
           end)
 

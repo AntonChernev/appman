@@ -1,4 +1,6 @@
 defmodule Appman do
+  require Logger
+
   @doc """
   Register app so that it can be started.
   Apps have a name and a path to project.
